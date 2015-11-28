@@ -149,8 +149,7 @@ function uc_fetch_form($form, &$form_state, $order) {
           'particular' => $order->order_id,
     );
 
-    // We can't pass negative value line items to Fetch it seems, so we need to
-    // subtract their values from the products. So send as a single line item.
+    // Can't pass negative value line items to Web2Pay, so send as a single line item.
     $separate_line_items = TRUE;
     $product_titles = array();
     $item_titles = array();
@@ -172,6 +171,11 @@ function uc_fetch_form($form, &$form_state, $order) {
       $data['item_price1'] = uc_currency_format($order->order_total, FALSE, FALSE, '.');
       $data['item_code1'] = t('UC-@id', array('@id' => $order->order_id));
       $data['item_qty1'] = 1;
+
+      // Fetch has a character limit on that item_name1 though.
+      if (strlen($data['item_name1']) > 49) {
+        $data['item_name1'] = substr($data['item_name1'], 0, 46) . '...';
+      }
     }
     else {
       // Add a line item for each product being ordered.
