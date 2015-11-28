@@ -149,40 +149,66 @@ function uc_fetch_form($form, &$form_state, $order) {
           'particular' => $order->order_id,
     );
 
-    // Add a line item for each product being ordered.
-    $i = 1;
-    foreach ($order->products as $product) {
-        // Web2Pay does not accept line items with a price of $0.00.
-        if ($product->price == 0) {
-          continue;
-        }
-        $data['item_name' . $i] = $product->title;
-        // Web2Pay does not accept line items with a length of >50 chars.
-        if (strlen($product->title) > 49) {
-          $data['item_name' . $i] = substr($product->title, 0, 46) . '...';
-        }
-        $data['item_price' . $i] = uc_currency_format($product->price, FALSE, FALSE, '.');
-        $data['item_code' . $i] = $product->nid;
-        $data['item_qty' . $i] = $product->qty;
-        $i++;
-    }
-      
+    // We can't pass negative value line items to Fetch it seems, so we need to
+    // subtract their values from the products. So send as a single line item.
+    $separate_line_items = TRUE;
+    $product_titles = array();
+    $item_titles = array();
     foreach ( $order->line_items as $item ) {
-        if ( $item['type'] == 'shipping' && $item['amount'] > 0) {          
-          $data['item_name'. $i] = $item['title'].'(shipping)';
-          $data['item_price'. $i] = uc_currency_format($item['amount'], FALSE, FALSE, '.');
-          $data['item_code'. $i] = '' ; // $item['type'] ;
-          $data['item_qty'. $i] = "1";
-          $i++;
+        $item_titles[] = $item['title'];
+        if ( $item['type'] == 'coupon' && $item['amount'] < 0 ) {
+          $separate_line_items = FALSE;
         }
+    }
 
-        if ( $item['type'] == 'tax' && floatval($item['amount']) > 0) {
-          $data['item_name'. $i] = $item['title'];
-          $data['item_price'. $i] = uc_currency_format($item['amount'], FALSE, FALSE, '.');
-          $data['item_code'. $i] = $i; // $item['type'] ;
-          $data['item_qty'. $i] = "1";
+    if (!$separate_line_items) {
+      foreach ($order->products as $product) {
+        $product_titles[] = $product->title;
+      }
+      $data['item_name1'] = t('Order @id: @titles', array(
+        '@id' => $order->order_id,
+        '@titles' => implode(', ', array_merge($product_titles, $item_titles)),
+      ));
+      $data['item_price1'] = uc_currency_format($order->order_total, FALSE, FALSE, '.');
+      $data['item_code1'] = t('UC-@id', array('@id' => $order->order_id));
+      $data['item_qty1'] = 1;
+    }
+    else {
+      // Add a line item for each product being ordered.
+      $i = 1;
+      foreach ($order->products as $product) {
+          // Web2Pay does not accept line items with a price of $0.00.
+          if ($product->price == 0) {
+            continue;
+          }
+          $data['item_name' . $i] = $product->title;
+          // Web2Pay does not accept line items with a length of >50 chars.
+          if (strlen($product->title) > 49) {
+            $data['item_name' . $i] = substr($product->title, 0, 46) . '...';
+          }
+          $data['item_price' . $i] = uc_currency_format($product->price, FALSE, FALSE, '.');
+          $data['item_code' . $i] = $product->nid;
+          $data['item_qty' . $i] = $product->qty;
           $i++;
-        }
+      }
+
+      foreach ( $order->line_items as $item ) {
+          if ( $item['type'] == 'shipping' && $item['amount'] > 0) {
+            $data['item_name'. $i] = $item['title'].'(shipping)';
+            $data['item_price'. $i] = uc_currency_format($item['amount'], FALSE, FALSE, '.');
+            $data['item_code'. $i] = '' ; // $item['type'] ;
+            $data['item_qty'. $i] = "1";
+            $i++;
+          }
+
+          if ( $item['type'] == 'tax' && floatval($item['amount']) > 0) {
+            $data['item_name'. $i] = $item['title'];
+            $data['item_price'. $i] = uc_currency_format($item['amount'], FALSE, FALSE, '.');
+            $data['item_code'. $i] = $i; // $item['type'] ;
+            $data['item_qty'. $i] = "1";
+            $i++;
+          }
+      }
     }
 
     // Alter the POST URL and add the web2pay form variables.
