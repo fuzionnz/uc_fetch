@@ -169,11 +169,12 @@ function uc_fetch_form($form, &$form_state, $order) {
         '@id' => $order->order_id,
         '@titles' => implode(', ', array_merge($product_titles, $item_titles)),
       ));
+    $data['particular'] = implode(', ', array_merge($product_titles, $item_titles));
     $data['item_price1'] = uc_currency_format($order->order_total, FALSE, FALSE, '.');
     $data['item_code1'] = t('UC-@id', array('@id' => $order->order_id));
     $data['item_qty1'] = 1;
 
-    // Fetch has a character limit on that item_name1 though.
+    // Web2Pay does not accept line items with a length of >50 chars.
     if (strlen($data['item_name1']) > 49) {
       $data['item_name1'] = substr($data['item_name1'], 0, 46) . '...';
     }
@@ -216,6 +217,10 @@ function uc_fetch_form($form, &$form_state, $order) {
         $i++;
       }
     }
+  }
+
+  if (!empty($order->primary_email)) {
+    $data['particular'] = $order->primary_email;
   }
 
   // Alter the POST URL and add the web2pay form variables.
@@ -375,4 +380,3 @@ function _uc_fetch_update_order_status($post_arr, $response) {
     uc_order_update_status($order_id, $order_status);
   }
 }
-
