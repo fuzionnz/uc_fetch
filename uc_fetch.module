@@ -27,21 +27,21 @@ function uc_fetch_uc_payment_method() {
  * Implements hook_menu().
  */
 function uc_fetch_menu() {
-    
+
   $items['uc_fetch/ipn'] = array(
     'title' => 'Fetch Process',
     'page callback' => 'uc_fetch_varify',
     'access callback' => true,
     'type' => MENU_CALLBACK,
   );
-  
+
   $items['uc_fetch/complete'] = array(
     'title' => 'Order complete',
     'page callback' => 'uc_fetch_complete',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-  
+
   return $items;
 }
 
@@ -58,7 +58,7 @@ function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_stat
             '#description' => t('Account ID issued by Fetch'),
             '#default_value' => variable_get('uc_fetch_account_id', ''),
         );
-        
+
         $form['fetch']['uc_fetch_new_order_status'] = array(
             '#type' => 'select',
             '#title' => t('New order status'),
@@ -66,15 +66,15 @@ function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_stat
             '#options' => _uc_fetch_get_order_state_array(),
             '#default_value' => variable_get('uc_fetch_new_order_status', 'payment_received'),
         );
-        
+
         $form['fetch']['uc_fetch_success_order_status'] = array(
             '#type' => 'select',
             '#title' => t('Order status when payment successful'),
             '#description' => t('Orders will be moved to this status when a payment is successful. If no option is chosen then the order will be moved to \'In checkout\'. The first option of the dropdown list will be the default state if \'In checkout\' cannot be found in the database. (optional)'),
             '#options' => _uc_fetch_get_order_state_array(),
             '#default_value' => variable_get('uc_fetch_success_order_status', 'in_checkout'),
-        );      
-        
+        );
+
         $form['fetch']['uc_fetch_failed_order_status'] = array(
             '#type' => 'select',
             '#title' => t('Order status when payment failed'),
@@ -82,20 +82,20 @@ function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_stat
             '#options' => _uc_fetch_get_order_state_array(),
             '#default_value' => variable_get('uc_fetch_failed_order_status', 'payment_received'),
         );
-        
+
         $form['fetch']['uc_fetch_header_image'] = array(
             '#type' => 'textfield',
             '#title' => t('Header image URL'),
             '#description' => t('URL of image displayed at top of payment page, max size: 750px wide by 90px high, must be URL encoded and stored on secure (HTTPS) server'),
             '#default_value' => variable_get('uc_fetch_header_image', ''),
         );
-        
+
          $form['fetch']['uc_fetch_header_border_colour'] = array(
             '#type' => 'textfield',
             '#title' => t('Header border colour'),
             '#description' => t('This sets the colour of the bottom border of the payment page header. Values should be in hexadecimal e.g. FFFFFF for white.'),
             '#default_value' => variable_get('uc_fetch_header_border_colour', ''),
-        );      
+        );
         $form['fetch']['uc_fetch_header_background_colour'] = array(
             '#type' => 'textfield',
             '#title' => t('Header background colour'),
@@ -117,8 +117,8 @@ function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_stat
             '#description' => t('Whether the option for sending an emailed payment receipt from Fetch should be shown to the customer.'),
             '#options' => array('1'=>'Yes', '0'=>'No'),
             '#default_value' => variable_get('uc_fetch_receipt_email', '1'),
-        );        
-     
+        );
+
       return $form;
     case 'cart-review':
       _uc_fetch_update_new_state();
@@ -132,7 +132,7 @@ function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_stat
 function uc_fetch_form($form, &$form_state, $order) {
     $store_card =  variable_get('uc_fetch_save_card', '0');
     $email_display = variable_get('uc_fetch_receipt_email', '1');
-    
+
     // Basic settings.
     $data = array(
           'cmd' => '_xcart',
@@ -184,22 +184,22 @@ function uc_fetch_form($form, &$form_state, $order) {
           $i++;
         }
     }
-      
+
     // Alter the POST URL and add the web2pay form variables.
-    $form['#action'] = _uc_fetch_get_payment_url(); 
+    $form['#action'] = _uc_fetch_get_payment_url();
     foreach ($data as $name => $value) {
       $form[$name] = array(
         '#type' => 'hidden',
         '#value' => $value
       );
     }
-     
+
     $form['actions'] = array('#type' => 'actions');
     $form['actions']['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Submit order'),
     );
-      
+
     return $form;
 }
 
@@ -252,7 +252,7 @@ function uc_fetch_complete() {
         }
     } else {
         $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
-        drupal_goto('<front>'); 
+        drupal_goto('<front>');
     }
 }
 
@@ -305,7 +305,7 @@ function _uc_fetch_callAPI($url, $post_data) {
         curl_setopt($ch, CURLOPT_TIMEOUT, 100);
         curl_setopt($ch, CURLOPT_VERBOSE, 1);
         curl_setopt($ch, CURLOPT_NOPROGRESS, 0);
-        $response = curl_exec($ch);            
+        $response = curl_exec($ch);
         curl_close($ch);
     } catch (Exception $e) {
         throw new Exception("Invalid URL", 0, $e);
@@ -318,12 +318,12 @@ function _uc_fetch_update_order_status ($post_arr, $response) {
     $order_status = '';
     $order_id = intval($post_arr['particular']);
     $order = uc_order_load($order_id);
-    
+
     if ($order == FALSE) {
         watchdog('uc_fetch', 'Order #'.$order_id.' not found.', WATCHDOG_WARNING);
         exit();
     }
-    
+
     if($response=='VERIFIED') {
         if (intval($post_arr['transaction_status']) == 2) {
             $order_status = variable_get('uc_fetch_success_order_status', 'in_checkout');
