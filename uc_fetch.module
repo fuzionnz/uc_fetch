@@ -351,7 +351,7 @@ function _uc_fetch_callAPI($url, $post_data) {
     curl_close($ch);
   }
   catch(Exception$e) {
-    thrownew Exception("Invalid URL", 0, $e);
+    throw new Exception("Invalid URL", 0, $e);
   }
   return $response;
 }
