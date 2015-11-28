@@ -30,7 +30,7 @@ function uc_fetch_menu() {
 
   $items['uc_fetch/ipn'] = array(
     'title' => 'Fetch Process',
-    'page callback' => 'uc_fetch_varify',
+    'page callback' => 'uc_fetch_verify',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
@@ -244,10 +244,10 @@ function uc_fetch_form($form, &$form_state, $order) {
 /**
  * Page callback for Fetch MNS notification URL.
  */
-function uc_fetch_varify() {
+function uc_fetch_verify() {
   if ($_POST) {
-    $notify_url = _uc_fetch_get_varify_url();
-    $post_data = _uc_fetch_creating_varify_posted_data($_POST);
+    $notify_url = _uc_fetch_get_verify_url();
+    $post_data = _uc_fetch_creating_verify_posted_data($_POST);
     $response = _uc_fetch_callAPI($notify_url, $post_data);
     _uc_fetch_update_order_status($_POST, $response);
   }
@@ -318,12 +318,12 @@ function _uc_fetch_get_payment_url() {
   return $payment_url;
 }
 
-function _uc_fetch_get_varify_url() {
-  $varify_url = 'https://my.fetchpayments.co.nz/webpayments/MNSHandler.aspx';
-  return $varify_url;
+function _uc_fetch_get_verify_url() {
+  $verify_url = 'https://my.fetchpayments.co.nz/webpayments/MNSHandler.aspx';
+  return $verify_url;
 }
 
-function _uc_fetch_creating_varify_posted_data($array) {
+function _uc_fetch_creating_verify_posted_data($array) {
   $post_data = '';
   foreach ($array as $key => $value) {
     $post_data = $key . '=' . urlencode($value) . '&' . $post_data;
