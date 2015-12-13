@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Install / upgrade functions for UC Fetch.
+ */
+
+/**
+ * Clean up messy dblog entries.
+ */
+function uc_fetch_update_7100(&$sandbox) {
+  if (module_exists('dblog')) {
+    $args = array(
+      ':array' => 'a:0:{}', 
+      ':integer' => 'i:4;',
+      ':type' => 'uc_fetch',
+    );
+    $sql = 'UPDATE {watchdog} SET variables=:array WHERE variables=:integer AND type=:type';
+    db_query($sql, $args);
+  }
+  return t('Cleaned up dblog entries.');
+}
