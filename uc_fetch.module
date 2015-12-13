@@ -358,7 +358,7 @@ function _uc_fetch_callAPI($url, $post_data) {
 
 function _uc_fetch_update_order_status($post_arr, $response) {
   $order_status = '';
-  $order_id = intval($post_arr['particular']);
+  $order_id = intval($post_arr['reference']);
   $order = uc_order_load($order_id);
 
   if ($order == FALSE) {
