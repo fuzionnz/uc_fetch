@@ -254,18 +254,19 @@ function uc_fetch_verify() {
 }
 
 function uc_fetch_complete() {
+  watchdog('uc_fetch', '$_POST:<pre>!post</pre>', array('!post' => print_r($_POST,1)));
   if ($_POST) {
     $txn_status = $_POST['txn_status'];
     switch ($txn_status) {
       case 0:
-        //Unknown transaction
+        // Unknown transaction.
         $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
         drupal_set_message(t('We\'re sorry, your credit card payment was not successful.  Reason:  Unknown transaction.'), 'error');
         drupal_goto('cart/checkout/complete');
         break;
 
       case 2:
-        //Successfull
+        // Successful.
         $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
         drupal_goto('cart/checkout/complete');
         break;
