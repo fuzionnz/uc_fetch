@@ -96,6 +96,7 @@ function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_stat
         '#description' => t('This sets the colour of the bottom border of the payment page header. Values should be in hexadecimal e.g. FFFFFF for white.'),
         '#default_value' => variable_get('uc_fetch_header_border_colour', ''),
       );
+
       $form['fetch']['uc_fetch_header_background_colour'] = array(
         '#type' => 'textfield',
         '#title' => t('Header background colour'),
@@ -346,7 +347,7 @@ function _uc_fetch_creating_verify_posted_data($array) {
   return $post_data;
 }
 
-//call 	Fetch API and return "VARIVIED" or "REJECTED" back
+// Call Fetch API, return "VERIFIED" or "REJECTED".
 function _uc_fetch_callAPI($url, $post_data) {
   $response = '';
   try {
@@ -364,7 +365,7 @@ function _uc_fetch_callAPI($url, $post_data) {
     $response = curl_exec($ch);
     curl_close($ch);
   }
-  catch(Exception$e) {
+  catch (Exception $e) {
     throw new Exception("Invalid URL", 0, $e);
   }
   return $response;
