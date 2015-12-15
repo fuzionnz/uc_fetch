@@ -266,49 +266,14 @@ function uc_fetch_verify() {
 }
 
 function uc_fetch_complete() {
-  watchdog('uc_fetch', '$_POST:<pre>!post</pre>', array('!post' => print_r($_POST,1)));
-  if ($_POST) {
-    $txn_status = $_POST['txn_status'];
-    switch ($txn_status) {
-      case 0:
-        // Unknown transaction.
-        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
-        drupal_set_message(t('We\'re sorry, your credit card payment was not successful.  Reason:  Unknown transaction.'), 'error');
-        drupal_goto('cart/checkout/complete');
-        break;
-
-      case 2:
-        // Successful.
-        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
-        drupal_goto('cart/checkout/complete');
-        break;
-
-      case 3:
-        //Failed – Error
-        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
-        drupal_set_message(t('We\'re sorry, your credit card payment was not successful.  Reason:  Failed – Error'), 'error');
-        drupal_goto('cart/checkout/complete');
-        break;
-
-      case 4:
-        //Blocked – Transaction rules prevent this transaction taking place
-        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
-        drupal_set_message(t('We\'re sorry, your credit card payment was not successful.  Reason:  Blocked.'), 'error');
-        drupal_goto('cart/checkout/complete');
-        break;
-
-      case 11:
-        //Declined – Transaction was declined at the bank
-        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
-        drupal_set_message(t('We\'re sorry, your credit card payment was not successful.  Reason: Declined.'), 'error');
-        drupal_goto('cart/checkout/complete');
-        break;
+  if ($order = uc_order_load($_SESSION['cart_order'])) {
+    if ($order->order_status == variable_get('uc_fetch_success_order_status', 'payment_received')) {
+      $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+      drupal_goto('cart/checkout/complete');
     }
   }
-  else {
-    $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
-    drupal_goto('<front>');
-  }
+  drupal_set_message(t('We\'re sorry, your credit card payment was not successful.'), 'error');
+  drupal_goto('cart/checkout');
 }
 
 function _uc_fetch_get_order_state_array() {
