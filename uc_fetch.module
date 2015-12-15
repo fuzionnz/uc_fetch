@@ -119,6 +119,17 @@ function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_stat
         '#default_value' => variable_get('uc_fetch_receipt_email', '1'),
       );
 
+      $form['fetch']['uc_fetch_server'] = array(
+        '#type' => 'select',
+        '#title' => t('Transaction mode'),
+        '#description' => t('Use test mode to make transactions using test credit cards. See the Fetch integration guide for test card details.'),
+        '#options' => array(
+          'https://my.fetchpayments.co.nz' => t('Live'),
+          'https://demo.fetchpayments.co.nz' => t('Test'),
+        ),
+        '#default_value' => variable_get('uc_fetch_server', 'https://my.fetchpayments.co.nz/'),
+      );
+
       return $form;
 
     case 'cart-review':
@@ -315,12 +326,14 @@ function _uc_fetch_update_new_state() {
 }
 
 function _uc_fetch_get_payment_url() {
-  $payment_url = 'https://my.fetchpayments.co.nz/webpayments/default.aspx';
+  $payment_url = variable_get('uc_fetch_server', 'https://my.fetchpayments.co.nz/') .
+    '/webpayments/default.aspx';
   return $payment_url;
 }
 
 function _uc_fetch_get_verify_url() {
-  $verify_url = 'https://my.fetchpayments.co.nz/webpayments/MNSHandler.aspx';
+  $verify_url = variable_get('uc_fetch_server', 'https://my.fetchpayments.co.nz/') .
+    '/webpayments/MNSHandler.aspx';
   return $verify_url;
 }
 
