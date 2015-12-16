@@ -120,6 +120,14 @@ function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_stat
         '#default_value' => variable_get('uc_fetch_receipt_email', '1'),
       );
 
+      $form['fetch']['uc_fetch_receipt_email'] = array(
+        '#type' => 'select',
+        '#title' => t('Display receipt email'),
+        '#description' => t('Whether the option for sending an emailed payment receipt from Fetch should be shown to the customer.'),
+        '#options' => array('1' => 'Yes', '0' => 'No'),
+        '#default_value' => variable_get('uc_fetch_receipt_email', '1'),
+      );
+
       $form['fetch']['uc_fetch_server'] = array(
         '#type' => 'select',
         '#title' => t('Transaction mode'),
