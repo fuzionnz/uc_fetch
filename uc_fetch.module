@@ -47,7 +47,6 @@ function uc_fetch_menu() {
 
 /**
  * Adds Fetch settings to the payment method settings form.
- *
  */
 function uc_payment_method_fetch_gateway($op, &$order, $form = NULL, &$form_state = NULL) {
   switch ($op) {
@@ -273,6 +272,9 @@ function uc_fetch_verify() {
   }
 }
 
+/**
+ * Path callback for completed transaction.
+ */
 function uc_fetch_complete() {
   if ($order = uc_order_load($_SESSION['cart_order'])) {
     if ($order->order_status == variable_get('uc_fetch_success_order_status', 'payment_received')) {
@@ -284,6 +286,9 @@ function uc_fetch_complete() {
   drupal_goto('cart/checkout');
 }
 
+/**
+ * @TODO Document this function.
+ */
 function _uc_fetch_get_order_state_array() {
   $order_state_array = array();
   $order_array = uc_order_status_list($scope = 'all', $sql = FALSE);
@@ -293,24 +298,36 @@ function _uc_fetch_get_order_state_array() {
   return $order_state_array;
 }
 
+/**
+ * @TODO Document this function.
+ */
 function _uc_fetch_update_new_state() {
   $order_id = intval($_SESSION['cart_order']);
   $order_status = variable_get('uc_fetch_new_order_status', 'payment_received');
   uc_order_update_status($order_id, $order_status);
 }
 
+/**
+ * Return payment URL on Fetch server.
+ */
 function _uc_fetch_get_payment_url() {
   $payment_url = variable_get('uc_fetch_server', 'https://my.fetchpayments.co.nz/') .
     '/webpayments/default.aspx';
   return $payment_url;
 }
 
+/**
+ * Return verify URL on Fetch server.
+ */
 function _uc_fetch_get_verify_url() {
   $verify_url = variable_get('uc_fetch_server', 'https://my.fetchpayments.co.nz/') .
     '/webpayments/MNSHandler.aspx';
   return $verify_url;
 }
 
+/**
+ * Verify submitted data.
+ */
 function _uc_fetch_creating_verify_posted_data($array) {
   $post_data = '';
   foreach ($array as $key => $value) {
@@ -320,7 +337,9 @@ function _uc_fetch_creating_verify_posted_data($array) {
   return $post_data;
 }
 
-// Call Fetch API, return "VERIFIED" or "REJECTED".
+/**
+ * Call Fetch API, return "VERIFIED" or "REJECTED".
+ */
 function _uc_fetch_callAPI($url, $post_data) {
   $response = '';
   try {
@@ -344,6 +363,9 @@ function _uc_fetch_callAPI($url, $post_data) {
   return $response;
 }
 
+/**
+ * Update the order status.
+ */
 function _uc_fetch_update_order_status($post_arr, $response) {
   $order_status = '';
   $order_id = intval($post_arr['reference']);
