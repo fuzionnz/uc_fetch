@@ -276,13 +276,61 @@ function uc_fetch_verify() {
  * Path callback for completed transaction.
  */
 function uc_fetch_complete() {
-  if ($order = uc_order_load($_SESSION['cart_order'])) {
-    if ($order->order_status == variable_get('uc_fetch_success_order_status', 'payment_received')) {
-      $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
-      drupal_goto('cart/checkout/complete');
+  $order_id = $_SESSION['cart_order'];
+  global $user;
+  if (!empty($_POST['txn_status'])) {
+    switch ($_POST['txn_status']) {
+      case 0:
+        // Unknown transaction.
+        uc_order_comment_save($order_id, $user->uid, t('Unsuccessful payment attempt. Details:<pre>@details</pre>', array('@details' => print_r($_POST,1))), 'admin');
+        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+        drupal_set_message(t('We\'re sorry, your credit card payment was unsuccessful.'), 'error');
+        drupal_goto('cart/checkout');
+        break;
+
+      case 2:
+        // Successful.
+        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+        drupal_goto('cart/checkout/complete');
+        break;
+
+      case 3:
+        // Failed – Error.
+        uc_order_comment_save($order_id, $user->uid, t('Payment attempt failed. Details:<pre>@details</pre>', array('@details' => print_r($_POST,1))), 'admin');
+        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+        drupal_set_message(t('We\'re sorry, your credit card payment failed.'), 'error');
+        drupal_goto('cart/checkout');
+        break;
+
+      case 4:
+        // Blocked – Transaction rules prevent this transaction taking place.
+        uc_order_comment_save($order_id, $user->uid, t('Blocked payment attempt. Details:<pre>@details</pre>', array('@details' => print_r($_POST,1))), 'admin');
+        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+        drupal_set_message(t('We\'re sorry, your credit card payment was blocked.'), 'error');
+        drupal_goto('cart/checkout');
+        break;
+
+      case 11:
+        // Declined – Transaction was declined at the bank.
+        uc_order_comment_save($order_id, $user->uid, t('Declined payment attempt. Details:<pre>@details</pre>', array('@details' => print_r($_POST,1))), 'admin');
+        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+        drupal_set_message(t('We\'re sorry, your credit card payment was declined.'), 'error');
+        drupal_goto('cart/checkout');
+        break;
     }
   }
-  drupal_set_message(t('We\'re sorry, your credit card payment was not successful.'), 'error');
+  else {
+    if ($order = uc_order_load($_SESSION['cart_order'])) {
+      watchdog('uc_fetch', 'Order: <pre>!order</pre>', array('!order' => print_r($order,1)), WATCHDOG_DEBUG);
+      // We only complete here if IPN already notified a successful transaction.
+      if ($order->order_status == variable_get('uc_fetch_success_order_status', 'payment_received')) {
+        //
+        $_SESSION['uc_checkout'][$_SESSION['cart_order']]['do_complete'] = TRUE;
+        drupal_goto('cart/checkout/complete');
+      }
+    }
+  }
+  drupal_set_message(t('We\'re sorry, your credit card payment did not complete.'), 'error');
   drupal_goto('cart/checkout');
 }
 
