@@ -9,6 +9,7 @@ The official code is available from www.fetchpayments.co.nz
 * Download [UC Fetch from Fetch Payments NZ](https://www.fetchpayments.co.nz/help/supported-shopping-carts-for-fetch-web-payments/)
 * [Merchant implementation docs](https://www.fetchpayments.co.nz/yk-files/501ccf687c122dcb3a39dd69630d0da3/Fetch%20Web%20Payments%20Integration%20Guide_July2015.pdf)
 * [Github repo for uc_fetch](https://github.com/fuzionnz/uc_fetch) (this is an *unofficial* fork)
+* [Drupal.org sandbox project](https://www.drupal.org/node/2634178)
 
 ## Known issues
 
